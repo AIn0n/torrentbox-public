@@ -1,0 +1,191 @@
+services:
+    samba:
+        image: dockurr/samba
+        container_name: samba
+        environment:
+            NAME: "Films"
+            USER: ${SAMBA_USER}
+            PASS: ${SAMBA_PW}
+            UID: 1000
+            GID: 1000
+            # macOS Compatibility
+            RW: "true"
+            SAMBA_CONF: |
+                vfs objects = fruit streams_xattr
+                fruit:metadata = netatalk
+                fruit:model = MacSamba
+                fruit:veto_appledouble = no
+                fruit:posix_rename = yes
+                fruit:zero_conf = yes
+        ports:
+            - 445:445
+        volumes:
+            - ./qbittorrent/downloads:/storage
+        restart: unless-stopped
+
+    pia-qbittorrent:
+        image: j4ym0/pia-qbittorrent
+        container_name: pia-qbittorrent
+        cap_add:
+            - NET_ADMIN
+        environment:
+            - REGION=${PIA_REG}
+            - USER=${PIA_USER}
+            - PASSWORD=${PIA_PW}
+            - WEBUI_INTERFACES=eth0
+            - PORT_FORWARDING=true
+            - ALLOW_LOCAL_SUBNET_TRAFFIC=true
+        volumes:
+            - ./qbittorrent/config:/config
+            - ./qbittorrent/downloads:/downloads
+        ports:
+            - "8888:8888"
+        restart: unless-stopped
+
+    homarr:
+        container_name: homarr
+        image: ghcr.io/homarr-labs/homarr:latest
+        restart: unless-stopped
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
+            - ./homarr/appdata:/appdata
+        environment:
+            - SECRET_ENCRYPTION_KEY=${HOMAR_ENC_KEY}
+        ports:
+            - "7575:7575"
+
+    radarr:
+        image: lscr.io/linuxserver/radarr:latest
+        container_name: radarr
+        environment:
+            - PUID=0
+            - PGID=0
+            - TZ=Etc/UTC
+        volumes:
+            - ./radarr/config:/config
+            - ./radarr/movies:/movies #optional
+            - ./qbittorrent/downloads:/downloads #optional
+        ports:
+            - 7878:7878
+        restart: unless-stopped
+
+    prowlarr:
+        image: lscr.io/linuxserver/prowlarr:latest
+        container_name: prowlarr
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Etc/UTC
+        volumes:
+            - ./prowlarr/data:/config
+        ports:
+            - 9696:9696
+        restart: unless-stopped
+
+    sonarr:
+        image: lscr.io/linuxserver/sonarr:latest
+        container_name: sonarr
+        environment:
+            - PUID=0
+            - PGID=0
+            - TZ=Etc/UTC
+        volumes:
+            - ./sonarr/data:/config
+            - ./sonarr/tvseries:/tv #optional
+            - ./qbittorrent/downloads:/downloads #optional
+        ports:
+            - 8989:8989
+        restart: unless-stopped
+
+    jellyfin:
+        image: lscr.io/linuxserver/jellyfin:latest
+        container_name: jellyfin
+        devices:
+            - /dev/dri/renderD128:/dev/dri/renderD128
+        environment:
+            - PUID=1000
+            - PGID=1000
+            - TZ=Etc/UTC
+            - JELLYFIN_PublishedServerUrl=http://192.168.18.100 #optional
+        volumes:
+            - ./jellyfin/config:/config
+            - ./radarr/movies:/data/movies #optional
+            - ./sonarr/tvseries:/data/tv #optional
+        ports:
+            - 8096:8096
+
+    uptime-kuma:
+        container_name: uptime-kuma
+        image: louislam/uptime-kuma:2
+        restart: unless-stopped
+        volumes:
+            - ${SMALL_SSD_DIR}/services_data/kuma:/app/data
+        ports:
+            # <Host Port>:<Container Port>
+            - "3001:3001"
+
+    pihole:
+        container_name: pihole
+        image: pihole/pihole:latest
+        ports:
+            # DNS Ports
+            - "53:53/tcp"
+            - "53:53/udp"
+            # Default HTTP Port
+            - "80:80/tcp"
+            - "443:443/tcp"
+        environment:
+            TZ: "Europe/Warsaw"
+            # Set a password to access the web interface. Not setting one will result in a random password being assigned
+            FTLCONF_webserver_api_password: ${PI_HOLE_PW}
+            # If using Docker's default `bridge` network setting the dns listening mode should be set to 'ALL'
+            FTLCONF_dns_listeningMode: "ALL"
+        # Volumes store your data between container upgrades
+        volumes:
+            - ${SMALL_SSD_DIR}/services_data/pihole:/etc/pihole
+        restart: unless-stopped
+
+    syncthing:
+        image: syncthing/syncthing
+        container_name: syncthing
+        hostname: my-syncthing
+        environment:
+            - PUID=1000
+            - PGID=1000
+        volumes:
+            # Syncthing configuration and database
+            - ${SMALL_SSD_DIR}/services_data/syncthing/config:/var/syncthing/config
+            # Sync folder - mount the directory you want to synchronize
+            - ${SMALL_SSD_DIR}/services_data/syncthing/data:/var/syncthing/data
+        network_mode: host
+        restart: unless-stopped
+        healthcheck:
+            test: curl -fkLsS -m 2 127.0.0.1:8384/rest/noauth/health | grep -o --color=never OK || exit 1
+            interval: 1m
+            timeout: 10s
+            retries: 3
+
+    paperless-broker:
+        container_name: paperless-broker
+        image: docker.io/library/redis:8
+        restart: unless-stopped
+        volumes:
+            - ${SMALL_SSD_DIR}/services_data/paperless/redisdata:/data
+    paperless:
+        container_name: paperless-ngx
+        image: ghcr.io/paperless-ngx/paperless-ngx:latest
+        restart: unless-stopped
+        depends_on:
+            - paperless-broker
+        ports:
+            - "8000:8000"
+        volumes:
+            - ${SMALL_SSD_DIR}/services_data/paperless/data:/usr/src/paperless/data
+            - ${SMALL_SSD_DIR}/services_data/paperless/media:/usr/src/paperless/media
+            - ${SMALL_SSD_DIR}/services_data/paperless/export:/usr/src/paperless/export
+            - ${SMALL_SSD_DIR}/services_data/paperless/consume:/usr/src/paperless/consume
+        environment:
+            PAPERLESS_REDIS: redis://paperless-broker:6379
+            PAPERLESS_SECRET_KEY: ${PAPERLESS_SECRET}
+            PAPERLESS_OCR_LANGUAGE: pol
+            PAPERLESS_OCR_LANGUAGES: pol eng
