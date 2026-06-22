@@ -1,0 +1,63 @@
+pageInfo:
+  title: Torrent Box Local
+
+appConfig:
+  theme: gruvbox
+
+
+sections: # An array of sections
+- name: General
+  icon: far fa-rocket
+  widgets:
+  - type: clock
+    options:
+      timeZone: Europe/Warsaw
+  items:
+  - title: Issues
+    description: View open issues, or raise a new one
+    icon: fas fa-bug
+    url: https://github.com/Lissy93/dashy/issues
+- name: Monitoring
+  icon: far fa-chart-bar
+  items:
+  - title: Homarr
+    url: http://torrentbox.local:7575
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/homarr.webp
+  - title: Uptime Kuma
+    url: http://torrentbox.local:3001/dashboard
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/uptime-kuma.webp
+- name: Sync & Backup
+  items:
+  - title: Syncthing
+    url: http://torrentbox.local:8384/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/syncthing.webp
+  - title: Paperless
+    url: http://torrentbox.local:8000/dashboard
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/paperless.webp
+- name: Media
+  icon: far fa-video
+  items:
+  - title: Jellyfin
+    url: http://torrentbox.local:8096/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/jellyfin.webp
+  - title: Radarr
+    url: http://torrentbox.local:7878/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/radarr.webp
+  - title: Sonarr
+    url: http://torrentbox.local:8989/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/sonarr.webp
+- name: Torrenting
+  icon: far fa-skull-crossbones
+  items:
+  - title: Prowlarr
+    url: http://torrentbox.local:9696/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/prowlarr.webp
+  - title: QBitTorrent PIA
+    url: http://torrentbox.local:8888/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/qbittorrent.webp
+- name: Networking
+  icon: far fa-network-wired
+  items:
+  - title: PiHole
+    url: http://torrentbox.local:443/
+    icon: https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/webp/pi-hole.webp
