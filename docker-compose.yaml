@@ -1,3 +1,6 @@
+include:
+    - monitoring.docker-compose.yaml
+
 services:
     samba:
         image: dockurr/samba
@@ -20,7 +23,7 @@ services:
         ports:
             - 445:445
         volumes:
-            - ./qbittorrent/downloads:/storage
+            - ${MAIN_SSD_DIR}/qbittorrent/downloads:/storage
         restart: unless-stopped
 
     pia-qbittorrent:
@@ -36,8 +39,8 @@ services:
             - PORT_FORWARDING=true
             - ALLOW_LOCAL_SUBNET_TRAFFIC=true
         volumes:
-            - ./qbittorrent/config:/config
-            - ./qbittorrent/downloads:/downloads
+            - ${MAIN_SSD_DIR}/qbittorrent/config:/config
+            - ${MAIN_SSD_DIR}/qbittorrent/downloads:/downloads
         ports:
             - "8888:8888"
         restart: unless-stopped
@@ -62,9 +65,9 @@ services:
             - PGID=0
             - TZ=Etc/UTC
         volumes:
-            - ./radarr/config:/config
-            - ./radarr/movies:/movies #optional
-            - ./qbittorrent/downloads:/downloads #optional
+            - ${MAIN_SSD_DIR}/radarr/config:/config
+            - ${MAIN_SSD_DIR}/radarr/movies:/movies #optional
+            - ${MAIN_SSD_DIR}/qbittorrent/downloads:/downloads #optional
         ports:
             - 7878:7878
         restart: unless-stopped
@@ -77,7 +80,7 @@ services:
             - PGID=1000
             - TZ=Etc/UTC
         volumes:
-            - ./prowlarr/data:/config
+            - ${MAIN_SSD_DIR}/prowlarr/data:/config
         ports:
             - 9696:9696
         restart: unless-stopped
@@ -90,9 +93,9 @@ services:
             - PGID=0
             - TZ=Etc/UTC
         volumes:
-            - ./sonarr/data:/config
-            - ./sonarr/tvseries:/tv #optional
-            - ./qbittorrent/downloads:/downloads #optional
+            - ${MAIN_SSD_DIR}/sonarr/data:/config
+            - ${MAIN_SSD_DIR}/sonarr/tvseries:/tv #optional
+            - ${MAIN_SSD_DIR}/qbittorrent/downloads:/downloads #optional
         ports:
             - 8989:8989
         restart: unless-stopped
@@ -108,9 +111,9 @@ services:
             - TZ=Etc/UTC
             - JELLYFIN_PublishedServerUrl=http://192.168.18.100 #optional
         volumes:
-            - ./jellyfin/config:/config
-            - ./radarr/movies:/data/movies #optional
-            - ./sonarr/tvseries:/data/tv #optional
+            - ${MAIN_SSD_DIR}/jellyfin/config:/config
+            - ${MAIN_SSD_DIR}/radarr/movies:/data/movies #optional
+            - ${MAIN_SSD_DIR}/sonarr/tvseries:/data/tv #optional
         ports:
             - 8096:8096
 
