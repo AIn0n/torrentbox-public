@@ -44,19 +44,6 @@ services:
         ports:
             - "8888:8888"
         restart: unless-stopped
-
-    homarr:
-        container_name: homarr
-        image: ghcr.io/homarr-labs/homarr:latest
-        restart: unless-stopped
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock # Optional, only if you want docker integration
-            - ./homarr/appdata:/appdata
-        environment:
-            - SECRET_ENCRYPTION_KEY=${HOMAR_ENC_KEY}
-        ports:
-            - "7575:7575"
-
     radarr:
         image: lscr.io/linuxserver/radarr:latest
         container_name: radarr
@@ -116,17 +103,6 @@ services:
             - ${MAIN_SSD_DIR}/sonarr/tvseries:/data/tv #optional
         ports:
             - 8096:8096
-
-    uptime-kuma:
-        container_name: uptime-kuma
-        image: louislam/uptime-kuma:2
-        restart: unless-stopped
-        volumes:
-            - ${SMALL_SSD_DIR}/services_data/kuma:/app/data
-        ports:
-            # <Host Port>:<Container Port>
-            - "3001:3001"
-
     pihole:
         container_name: pihole
         image: pihole/pihole:latest
